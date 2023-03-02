@@ -17,7 +17,17 @@ const config = {
 const pool = mysql.createPool(config);
 
 server.get("/", (req, res) => {
-  const { country } = req.body;
+  const schema = joi.object({
+    country: joi.string().max(100).required(),
+  });
+
+  const validation = schema.validate(req.query);
+  if (validation.error) {
+    res.status(400).send(validation.error.details[0].message);
+    return;
+  }
+
+  const { country } = req.query;
   const exists = `SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
 
   pool.execute(exists, [country], (error, result) => {
@@ -47,6 +57,19 @@ server.post("/addCountry", (req, res) => {
 
   // if(Object.values(validation)[0].password === process.env.CODE) {
   if (password === process.env.CODE) {
+    const schema = joi.object({
+      password: joi.required(),
+      country: joi.string().max(100).required(),
+      capital: joi.string().max(100).required(),
+      population: joi.number().required(),
+      mainLanguage: joi.string().max(100).required(),
+    });
+
+    const validation = schema.validate(req.body);
+    if (validation.error) {
+      res.status(400).send(validation.error.details[0].message);
+      return;
+    }
     const exists = `SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
 
     pool.execute(exists, [country], (error, result) => {
@@ -79,7 +102,9 @@ server.post("/addCountry", (req, res) => {
       }
     });
   } else {
-    res.status(401).send("Unauthorized user");
+    res
+      .status(401)
+      .send("Unauthorized user. Please make sure password is correct.");
   }
 });
 
@@ -87,6 +112,18 @@ server.patch("/edit/capital", (req, res) => {
   const { password, country, capital } = req.body;
 
   if (password === process.env.CODE) {
+    const schema = joi.object({
+      password: joi.required(),
+      country: joi.string().max(100).required(),
+      capital: joi.string().max(100).required(),
+    });
+
+    const validation = schema.validate(req.body);
+    if (validation.error) {
+      res.status(400).send(validation.error.details[0].message);
+      return;
+    }
+
     const exists = `
   SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
 
@@ -123,6 +160,17 @@ server.patch("/edit/population", (req, res) => {
   const { password, country, population } = req.body;
 
   if (password === process.env.CODE) {
+    const schema = joi.object({
+      password: joi.required(),
+      country: joi.string().max(100).required(),
+      population: joi.number().required(),
+    });
+
+    const validation = schema.validate(req.body);
+    if (validation.error) {
+      res.status(400).send(validation.error.details[0].message);
+      return;
+    }
     const exists = `SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
 
     pool.execute(exists, [country], (error, result) => {
@@ -155,7 +203,9 @@ server.patch("/edit/population", (req, res) => {
       }
     });
   } else {
-    res.status(401).send("Unauthorized user");
+    res
+      .status(401)
+      .send("Unauthorized user. Please make sure password is correct.");
   }
 });
 
@@ -163,6 +213,17 @@ server.patch("/edit/language", (req, res) => {
   const { password, country, mainLanguage } = req.body;
 
   if (password === process.env.CODE) {
+    const schema = joi.object({
+      password: joi.required(),
+      country: joi.string().max(100).required(),
+      mainLanguage: joi.string().max(100).required(),
+    });
+
+    const validation = schema.validate(req.body);
+    if (validation.error) {
+      res.status(400).send(validation.error.details[0].message);
+      return;
+    }
     const exists = `
   SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
 
@@ -196,7 +257,9 @@ server.patch("/edit/language", (req, res) => {
       }
     });
   } else {
-    res.status(401).send("Unauthorized user");
+    res
+      .status(401)
+      .send("Unauthorized user. Please make sure password is correct.");
   }
 });
 
@@ -204,6 +267,16 @@ server.delete("/delete", (req, res) => {
   const { password, country } = req.body;
 
   if (password === process.env.CODE) {
+    const schema = joi.object({
+      password: joi.required(),
+      country: joi.string().max(100).required(),
+    });
+
+    const validation = schema.validate(req.body);
+    if (validation.error) {
+      res.status(400).send(validation.error.details[0].message);
+      return;
+    }
     const exists = `
     SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
     pool.query(exists, [country], (error, result) => {
@@ -229,7 +302,9 @@ server.delete("/delete", (req, res) => {
       }
     });
   } else {
-    res.status(401).send("Unauthorized user");
+    res
+      .status(401)
+      .send("Unauthorized user. Please make sure password is correct.");
   }
 });
 
