@@ -1,7 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv").config();
 const mysql = require("mysql2");
-const { country } = require("./server");
 const server = express();
 const joi = require("joi");
 
