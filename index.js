@@ -92,7 +92,7 @@ server.post("/addCountry", (req, res) => {
           (error, result) => {
             if (error) {
               console.log(error);
-              res.status(500).send("All fields must be included");
+              res.status(400).send(error);
             } else {
               res.status(201).send(result);
             }
