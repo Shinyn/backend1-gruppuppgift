@@ -31,7 +31,6 @@ server.get("/", (req, res) => {
     if (error) return res.status(400).send(error);    
 
       res.status(200).send(result);
-    
   });
 });
 
@@ -62,11 +61,10 @@ server.post("/addCountry", (req, res) => {
 
   pool.execute(sql, [country, capital, population, mainLanguage], (error, result) => {
     if (error) {
-      console.log(error);
       res.status(400).send(error);
-    } else {
-      res.status(201).send(result);
+      return;
     }
+      res.status(201).send(result);
   })
 })
 
@@ -81,6 +79,7 @@ server.patch("/edit/capital", (req, res) => {
   });
 
   const validation = schema.validate(req.body);
+
   if (validation.error) {
     res.status(400).send(validation.error.details[0].message);
     return;
@@ -98,173 +97,118 @@ server.patch("/edit/capital", (req, res) => {
 
     pool.execute(sql, [capital, country], (error, result) => {
       if (error) {
-        console.log(error);
         res.status(400).send(error);
-      } else {
-        res.status(200).send(`${country} was edited!`);
+        return;
       }
-    });
-
-
-  //   const exists = `
-  // SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
-
-    // pool.execute(exists, [country], (error, result) => {
-    //   if (error) {
-    //     res.sendStatus(500);
-    //   } else {
-    //     if (Object.values(result[0])[0] === 0) {
-    //       res.status(404).json("Country does not exist in database");
-    //       return;
-    //     }
-
+        res.status(200).send(result);
       
-    //   }
-    // });
+    });
 });
 
 server.patch("/edit/population", (req, res) => {
   const { password, country, population } = req.body;
 
-  if (password === process.env.CODE) {
-    const schema = joi.object({
-      password: joi.required(),
-      country: joi.string().max(100).required(),
-      population: joi.number().required(),
-    });
+  const schema = joi.object({
+    password: joi.required(),
+    country: joi.string().max(100).required(),
+    population: joi.number().required(),
+  });
 
-    const validation = schema.validate(req.body);
-    if (validation.error) {
-      res.status(400).send(validation.error.details[0].message);
+  const validation = schema.validate(req.body);
+
+  if (validation.error) {
+    res.status(400).send(validation.error.details[0].message);
+    return;
+  }
+
+  if (password !== process.env.CODE) {
+    res.status(401).send("Unauthorized user. Please make sure password is correct.");
+    return;
+  }
+  
+  const sql = `
+  UPDATE countryData
+  SET Population = ?
+  WHERE Country = ?`;
+
+  pool.execute(sql, [population, country], (error, result) => {
+    if (error) {
+      res.status(400).send(error);
       return;
     }
-    const exists = `SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
-
-    pool.execute(exists, [country], (error, result) => {
-      if (error) {
-        res.sendStatus(500);
-      } else {
-        if (Object.values(result[0])[0] === 0) {
-          console.log("nej");
-          res.status(404).json("Country does not exist in database");
-          return;
-        }
-
-        const sql = `
-      UPDATE countryData
-      SET Population = ?
-      WHERE Country = ?`;
-
-        pool.execute(sql, [population, country], (error, result) => {
-          if (error) {
-            console.log(error);
-            res
-              .status(400).send(error);
-          } else {
-            res.status(200).send(`${country} was edited!`);
-          }
-        });
-      }
-    });
-  } else {
-    res
-      .status(401)
-      .send("Unauthorized user. Please make sure password is correct.");
-  }
+      res.status(200).send(result);
+  });
 });
+
 
 server.patch("/edit/language", (req, res) => {
   const { password, country, mainLanguage } = req.body;
 
-  if (password === process.env.CODE) {
     const schema = joi.object({
       password: joi.required(),
       country: joi.string().max(100).required(),
-      mainLanguage: joi.string().max(100).required(),
+      mainLanguage: joi.string().max(100).required()
     });
-
+  
     const validation = schema.validate(req.body);
     if (validation.error) {
       res.status(400).send(validation.error.details[0].message);
       return;
     }
-    const exists = `
-  SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
-
-    pool.execute(exists, [country], (error, result) => {
-      if (error) {
-        res.sendStatus(500);
-      } else {
-        if (Object.values(result[0])[0] === 0) {
-          console.log("nej");
-          res.status(404).json("Country does not exist in database");
-          return;
-        }
-
-        const sql = `
+  
+    if (password !== process.env.CODE) {
+      res.status(401).send("Unauthorized user. Please make sure password is correct.");
+      return;
+    }
+    
+    const sql = `
     UPDATE countryData
     SET mainLanguage = ?
     WHERE Country = ?`;
-
-        pool.execute(sql, [mainLanguage, country], (error, result) => {
-          if (error) {
-            console.log(error);
-            res
-              .status(400).send(error);
-          } else {
-            res.status(200).send(`${country} was edited!`);
-          }
-        });
+  
+    pool.execute(sql, [mainLanguage, country], (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send(error);
+        return;
       }
+        res.status(200).send(result);
     });
-  } else {
-    res
-      .status(401)
-      .send("Unauthorized user. Please make sure password is correct.");
-  }
-});
+  });
+
 
 server.delete("/delete", (req, res) => {
   const { password, country } = req.body;
 
-  if (password === process.env.CODE) {
-    const schema = joi.object({
-      password: joi.required(),
-      country: joi.string().max(100).required(),
-    });
+  const schema = joi.object({
+    password: joi.required(),
+    country: joi.string().max(100).required(),
+  });
 
-    const validation = schema.validate(req.body);
-    if (validation.error) {
-      res.status(400).send(validation.error.details[0].message);
-      return;
-    }
-    const exists = `
-    SELECT EXISTS(SELECT * FROM countryData WHERE Country = ?)`;
-    pool.query(exists, [country], (error, result) => {
-      if (error) {
-        res.status(500);
-      } else {
-        if (Object.values(result[0])[0] === 0) {
-          res.status(404).json("Country does not exist in database");
-          return;
-        }
+  const validation = schema.validate(req.body);
 
-        const sql = `
+  if (validation.error) {
+    res.status(400).send(validation.error.details[0].message);
+    return;
+  }
+
+  if (password !== process.env.CODE) {
+    res.status(401).send("Unauthorized user. Please make sure password is correct.");
+    return;
+  }
+
+  const sql = `
       DELETE FROM countryData WHERE Country = ?`;
 
-        pool.query(sql, [country], (error, result) => {
-          if (error) {
-            console.log(error);
-            res.sendStatus(500);
-          } else {
-            res.status(200).send(`${country} was deleted from the database!`);
-          }
-        });
-      }
-    });
-  } else {
-    res.status(401).send("Unauthorized user. Please make sure password is correct.");
-  }
+      pool.query(sql, [country], (error, result) => {
+        if (error) {
+          res.sendStatus(500);
+          return;
+        }
+          res.status(200).send(result);
+
+      });
+  
 });
 
 server.listen(5050);
