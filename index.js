@@ -19,7 +19,7 @@ server.get("/", (req, res) => {
   const sql = `SELECT * FROM countryData`;
 
   pool.query(sql, (error, result) => {
-    if (error) return res.status(400).send(error);
+    if (error) return res.status(500).send(error);
 
     res.status(200).send(result);
   });
@@ -39,7 +39,7 @@ server.get("/country", (req, res) => {
   const sql = `SELECT * FROM countryData WHERE Country = ?`;
 
   pool.execute(sql, [country], (error, result) => {
-    if (error) return res.status(400).send(error);    
+    if (error) return res.status(500).send(error);    
 
       res.status(200).send(result);
   });
@@ -73,7 +73,7 @@ server.post("/addCountry", (req, res) => {
 
   pool.execute(sql, [country, capital, population, mainLanguage], (error, result) => {
     if (error) {
-      res.status(400).send(error);
+      res.status(500).send(error);
       return;
     }
       res.status(201).send(result);
@@ -109,7 +109,7 @@ server.patch("/edit/capital", (req, res) => {
 
     pool.execute(sql, [capital, country], (error, result) => {
       if (error) {
-        res.status(400).send(error);
+        res.status(500).send(error);
         return;
       }
         res.status(200).send(result);
@@ -145,7 +145,7 @@ server.patch("/edit/population", (req, res) => {
 
   pool.execute(sql, [population, country], (error, result) => {
     if (error) {
-      res.status(400).send(error);
+      res.status(500).send(error);
       return;
     }
       res.status(200).send(result);
@@ -181,7 +181,7 @@ server.patch("/edit/language", (req, res) => {
     pool.execute(sql, [mainLanguage, country], (error, result) => {
       if (error) {
         console.log(error);
-        res.status(400).send(error);
+        res.status(500).send(error);
         return;
       }
         res.status(200).send(result);
@@ -214,7 +214,7 @@ server.delete("/delete", (req, res) => {
 
       pool.query(sql, [country], (error, result) => {
         if (error) {
-          res.sendStatus(500);
+          res.status(500).send(error);
           return;
         }
           res.status(200).send(result);
