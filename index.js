@@ -143,7 +143,7 @@ server.patch("/edit/capital", (req, res) => {
         pool.execute(sql, [capital, country], (error, result) => {
           if (error) {
             console.log(error);
-            res.status(500).send("Make sure you include country and capital");
+            res.status(400).send(error);
           } else {
             res.status(200).send(`${country} was edited!`);
           }
@@ -191,10 +191,7 @@ server.patch("/edit/population", (req, res) => {
           if (error) {
             console.log(error);
             res
-              .status(500)
-              .send(
-                `Couldn't edit. Make sure to include Country and Population.`
-              );
+              .status(400).send(error);
           } else {
             res.status(200).send(`${country} was edited!`);
           }
@@ -245,10 +242,7 @@ server.patch("/edit/language", (req, res) => {
           if (error) {
             console.log(error);
             res
-              .status(500)
-              .send(
-                `Couldn't edit. Make sure to include Country and mainLanguage.`
-              );
+              .status(400).send(error);
           } else {
             res.status(200).send(`${country} was edited!`);
           }
